@@ -19,8 +19,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.TabCompleter;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -30,9 +28,15 @@ import java.util.Objects;
 public final class CommandUtil {
 	
 	public static void implementCommands() {
-		// Setup bukkit command interfaces
-		registerSpecialCommands();
+
 		Towny plugin = Towny.getPlugin();
+		
+		// Only do this when the plugin is initially enabling.
+		if (!plugin.isEnabled()) {
+			registerSpecialCommands();
+		}
+
+		// Setup bukkit command interfaces
 		Objects.requireNonNull(plugin.getCommand("townyadmin")).setExecutor(new TownyAdminCommand(plugin));
 		Objects.requireNonNull(plugin.getCommand("townyworld")).setExecutor(new TownyWorldCommand(plugin));
 		Objects.requireNonNull(plugin.getCommand("resident")).setExecutor(new ResidentCommand(plugin));
