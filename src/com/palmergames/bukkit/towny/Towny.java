@@ -40,6 +40,7 @@ import com.palmergames.bukkit.towny.permissions.TownyPerms;
 import com.palmergames.bukkit.towny.permissions.VaultPermSource;
 import com.palmergames.bukkit.towny.regen.TownyRegenAPI;
 import com.palmergames.bukkit.towny.tasks.OnPlayerLogin;
+import com.palmergames.bukkit.towny.utils.CommandUtil;
 import com.palmergames.bukkit.towny.utils.PlayerCacheUtil;
 import com.palmergames.bukkit.towny.utils.SpawnUtil;
 import com.palmergames.bukkit.towny.war.flagwar.FlagWar;
@@ -143,27 +144,16 @@ public class Towny extends JavaPlugin {
 		ConfirmationHandler.initialize(this);
 
 		if (load()) {
-			// Setup bukkit command interfaces
-			registerSpecialCommands();
-			getCommand("townyadmin").setExecutor(new TownyAdminCommand(this));
-			getCommand("townyworld").setExecutor(new TownyWorldCommand(this));
-			getCommand("resident").setExecutor(new ResidentCommand(this));
-			getCommand("towny").setExecutor(new TownyCommand(this));
-
-			CommandExecutor townCommandExecutor = new TownCommand(this);
-			getCommand("town").setExecutor(townCommandExecutor);
+			// Load the commands in.
+			CommandUtil.implementCommands();
 			
-			// This is needed because the vanilla "/t" tab completer needs to be overridden.
-			getCommand("t").setTabCompleter((TabCompleter)townCommandExecutor);
-			
-			getCommand("nation").setExecutor(new NationCommand(this));
-			getCommand("plot").setExecutor(new PlotCommand(this));
-			getCommand("invite").setExecutor(new InviteCommand(this));
-
+			// Add metrics
 			addMetricsCharts();
-
+			
+			// Enable flag war.
 			FlagWar.onEnable();
 
+			// Show changelog (if necessary)
 			if (TownySettings.isTownyUpdating(getVersion())) {
 				update();
 			}
@@ -812,25 +802,6 @@ public class Towny extends JavaPlugin {
 	public HUDManager getHUDManager() {
 		
 		return HUDManager;
-	}
-
-	// https://www.spigotmc.org/threads/small-easy-register-command-without-plugin-yml.38036/
-	private void registerSpecialCommands() {
-		List<Command> commands = new ArrayList<>(4);
-		commands.add(new AcceptCommand(TownySettings.getAcceptCommand()));
-		commands.add(new DenyCommand(TownySettings.getDenyCommand()));
-		commands.add(new ConfirmCommand(TownySettings.getConfirmCommand()));
-		commands.add(new CancelCommand(TownySettings.getCancelCommand()));
-		try {
-			final Field bukkitCommandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
-
-			bukkitCommandMap.setAccessible(true);
-			CommandMap commandMap = (CommandMap) bukkitCommandMap.get(Bukkit.getServer());
-
-			commandMap.registerAll("towny", commands);
-		} catch (NoSuchFieldException | IllegalAccessException e) {
-			e.printStackTrace();
-		}
 	}
 
 	private void addMetricsCharts() {
