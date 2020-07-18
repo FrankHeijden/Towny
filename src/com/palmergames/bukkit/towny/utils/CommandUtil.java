@@ -27,12 +27,14 @@ import java.util.Objects;
 
 public final class CommandUtil {
 	
+	public static boolean specialCommandsRegistered = false;
+	
 	public static void implementCommands() {
 
 		Towny plugin = Towny.getPlugin();
 		
 		// Only do this when the plugin is initially enabling.
-		if (!plugin.isEnabled()) {
+		if (!specialCommandsRegistered) {
 			registerSpecialCommands();
 		}
 
@@ -68,6 +70,9 @@ public final class CommandUtil {
 			commandMap.registerAll("towny", commands);
 		} catch (NoSuchFieldException | IllegalAccessException e) {
 			e.printStackTrace();
+			return;
 		}
+		
+		specialCommandsRegistered = true;
 	}
 }
